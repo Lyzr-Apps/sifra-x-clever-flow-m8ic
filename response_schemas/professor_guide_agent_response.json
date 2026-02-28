@@ -1,0 +1,44 @@
+{
+  "agent_name": "Professor Guide Agent",
+  "agent_id": "69a27e4da96eb35aa78a9c89",
+  "description": "Explains underlying concepts, provides step-by-step roadmap, identifies skills required, and suggests learning resource directions",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "mode_name": "string",
+    "mode_icon": "string",
+    "summary": "string",
+    "core_concepts": ["string"],
+    "step_by_step_roadmap": [
+      {
+        "phase": "number",
+        "title": "string",
+        "description": "string"
+      }
+    ],
+    "required_skills": ["string"],
+    "knowledge_gaps": ["string"],
+    "learning_directions": ["string"],
+    "mentorship_note": "string",
+    "verdict": "string"
+  },
+  "example_response": {
+    "mode_name": "Professor Guide",
+    "mode_icon": "graduation-cap",
+    "summary": "2-3 sentence educational overview",
+    "core_concepts": ["sample concept"],
+    "step_by_step_roadmap": [
+      {
+        "phase": 1,
+        "title": "Phase title",
+        "description": "What to do in this phase"
+      }
+    ],
+    "required_skills": ["sample skill"],
+    "knowledge_gaps": ["sample gap"],
+    "learning_directions": ["sample direction"],
+    "mentorship_note": "Encouraging but honest guidance",
+    "verdict": "One-line bottom-line conclusion"
+  }
+}

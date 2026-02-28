@@ -1,0 +1,133 @@
+{
+  "workflow_name": "Sifra X Multi-Perspective Strategic Intelligence System",
+  "workflow_description": "A multi-agent system that analyzes decisions from five distinct strategic perspectives (Logical Analyst, CEO Strategist, Professor Guide, Brutal Critic, Creative Visionary) coordinated by a Strategy Orchestrator that synthesizes a Boardroom Discussion with consensus scoring.",
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "User Decision Input",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "strategy_orchestrator",
+      "type": "Agent",
+      "label": "Strategy Orchestrator",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e6bd56a3c78b8262a4e",
+      "is_manager": true
+    },
+    {
+      "id": "logical_analyst",
+      "type": "Agent",
+      "label": "Logical Analyst Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e4ca96eb35aa78a9c87"
+    },
+    {
+      "id": "ceo_strategist",
+      "type": "Agent",
+      "label": "CEO Strategist Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e4c8e6d0e51fd5cd3c6"
+    },
+    {
+      "id": "professor_guide",
+      "type": "Agent",
+      "label": "Professor Guide Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e4da96eb35aa78a9c89"
+    },
+    {
+      "id": "brutal_critic",
+      "type": "Agent",
+      "label": "Brutal Critic Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e4d99680de146f8c21e"
+    },
+    {
+      "id": "creative_visionary",
+      "type": "Agent",
+      "label": "Creative Visionary Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69a27e4dd56a3c78b8262a4c"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Analysis Output",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    { "source": "input_node", "target": "strategy_orchestrator" },
+    { "source": "strategy_orchestrator", "target": "logical_analyst" },
+    { "source": "strategy_orchestrator", "target": "ceo_strategist" },
+    { "source": "strategy_orchestrator", "target": "professor_guide" },
+    { "source": "strategy_orchestrator", "target": "brutal_critic" },
+    { "source": "strategy_orchestrator", "target": "creative_visionary" },
+    { "source": "strategy_orchestrator", "target": "output_node" }
+  ],
+  "agents": [
+    {
+      "name": "Strategy Orchestrator",
+      "agent_id": "69a27e6bd56a3c78b8262a4e",
+      "role": "manager",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.4,
+      "top_p": 0.95,
+      "managed_agents": [
+        "69a27e4ca96eb35aa78a9c87",
+        "69a27e4c8e6d0e51fd5cd3c6",
+        "69a27e4da96eb35aa78a9c89",
+        "69a27e4d99680de146f8c21e",
+        "69a27e4dd56a3c78b8262a4c"
+      ]
+    },
+    {
+      "name": "Logical Analyst Agent",
+      "agent_id": "69a27e4ca96eb35aa78a9c87",
+      "role": "sub-agent",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.3,
+      "top_p": 0.9
+    },
+    {
+      "name": "CEO Strategist Agent",
+      "agent_id": "69a27e4c8e6d0e51fd5cd3c6",
+      "role": "sub-agent",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.5,
+      "top_p": 0.95
+    },
+    {
+      "name": "Professor Guide Agent",
+      "agent_id": "69a27e4da96eb35aa78a9c89",
+      "role": "sub-agent",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    {
+      "name": "Brutal Critic Agent",
+      "agent_id": "69a27e4d99680de146f8c21e",
+      "role": "sub-agent",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.6,
+      "top_p": 0.95
+    },
+    {
+      "name": "Creative Visionary Agent",
+      "agent_id": "69a27e4dd56a3c78b8262a4c",
+      "role": "sub-agent",
+      "model": "gpt-4.1",
+      "provider": "openai",
+      "temperature": 0.8,
+      "top_p": 0.95
+    }
+  ]
+}

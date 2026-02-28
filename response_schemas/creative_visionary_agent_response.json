@@ -1,0 +1,32 @@
+{
+  "agent_name": "Creative Visionary Agent",
+  "agent_id": "69a27e4dd56a3c78b8262a4c",
+  "description": "Proposes innovative twists, unique positioning strategies, branding ideas, viral angles, and synthesizes hybrid alternatives",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "mode_name": "string",
+    "mode_icon": "string",
+    "summary": "string",
+    "innovative_twists": ["string"],
+    "positioning_strategies": ["string"],
+    "branding_ideas": ["string"],
+    "viral_angles": ["string"],
+    "hybrid_alternative": "string",
+    "wild_card": "string",
+    "verdict": "string"
+  },
+  "example_response": {
+    "mode_name": "Creative Visionary",
+    "mode_icon": "palette",
+    "summary": "2-3 sentence creative overview",
+    "innovative_twists": ["sample twist"],
+    "positioning_strategies": ["sample strategy"],
+    "branding_ideas": ["sample branding idea"],
+    "viral_angles": ["sample viral angle"],
+    "hybrid_alternative": "Synthesized best-of-all approach",
+    "wild_card": "Bold game-changing idea",
+    "verdict": "One-line creative bottom-line conclusion"
+  }
+}

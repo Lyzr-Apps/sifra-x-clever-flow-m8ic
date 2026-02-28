@@ -1,0 +1,32 @@
+{
+  "agent_name": "CEO Strategist Agent",
+  "agent_id": "69a27e4c8e6d0e51fd5cd3c6",
+  "description": "Analyzes market opportunity, competitive edge, monetization potential, execution strategy, and long-term scalability like a seasoned business leader",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "mode_name": "string",
+    "mode_icon": "string",
+    "summary": "string",
+    "market_opportunity": "string",
+    "competitive_edge": "string",
+    "monetization_potential": "string",
+    "execution_strategy": ["string"],
+    "scalability_assessment": "string",
+    "strategic_recommendation": "string",
+    "verdict": "string"
+  },
+  "example_response": {
+    "mode_name": "CEO Strategist",
+    "mode_icon": "briefcase",
+    "summary": "2-3 sentence strategic overview",
+    "market_opportunity": "Assessment of market and timing",
+    "competitive_edge": "Competitive advantages identified",
+    "monetization_potential": "Value capture analysis",
+    "execution_strategy": ["sample milestone"],
+    "scalability_assessment": "Long-term growth evaluation",
+    "strategic_recommendation": "Go or no-go with reasoning",
+    "verdict": "One-line bottom-line conclusion"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "workflow_name": "Sifra X Multi-Perspective Strategic Intelligence System",
+  "status": "complete",
+  "created_at": "2026-02-28",
+  "agent_ids": {
+    "strategy_orchestrator": "69a27e6bd56a3c78b8262a4e",
+    "logical_analyst": "69a27e4ca96eb35aa78a9c87",
+    "ceo_strategist": "69a27e4c8e6d0e51fd5cd3c6",
+    "professor_guide": "69a27e4da96eb35aa78a9c89",
+    "brutal_critic": "69a27e4d99680de146f8c21e",
+    "creative_visionary": "69a27e4dd56a3c78b8262a4c"
+  },
+  "manager_agent_id": "69a27e6bd56a3c78b8262a4e",
+  "sub_agent_ids": [
+    "69a27e4ca96eb35aa78a9c87",
+    "69a27e4c8e6d0e51fd5cd3c6",
+    "69a27e4da96eb35aa78a9c89",
+    "69a27e4d99680de146f8c21e",
+    "69a27e4dd56a3c78b8262a4c"
+  ],
+  "response_schemas": {
+    "strategy_orchestrator": "response_schemas/strategy_orchestrator_response.json",
+    "logical_analyst": "response_schemas/logical_analyst_agent_response.json",
+    "ceo_strategist": "response_schemas/ceo_strategist_agent_response.json",
+    "professor_guide": "response_schemas/professor_guide_agent_response.json",
+    "brutal_critic": "response_schemas/brutal_critic_agent_response.json",
+    "creative_visionary": "response_schemas/creative_visionary_agent_response.json"
+  }
+}

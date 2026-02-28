@@ -1,0 +1,42 @@
+{
+  "agent_name": "Logical Analyst Agent",
+  "agent_id": "69a27e4ca96eb35aa78a9c87",
+  "description": "Provides objective, data-driven analysis including pros/cons breakdown, risk factors, key variables, and estimated success probability percentage",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "mode_name": "string",
+    "mode_icon": "string",
+    "summary": "string",
+    "pros": ["string"],
+    "cons": ["string"],
+    "risk_factors": [
+      {
+        "name": "string",
+        "level": "string",
+        "explanation": "string"
+      }
+    ],
+    "key_variables": ["string"],
+    "success_probability": "number",
+    "verdict": "string"
+  },
+  "example_response": {
+    "mode_name": "Logical Analyst",
+    "mode_icon": "brain",
+    "summary": "2-3 sentence overview of the analysis",
+    "pros": ["sample advantage"],
+    "cons": ["sample disadvantage"],
+    "risk_factors": [
+      {
+        "name": "Risk factor name",
+        "level": "Low, Medium, or High",
+        "explanation": "Brief explanation of the risk"
+      }
+    ],
+    "key_variables": ["sample variable"],
+    "success_probability": 0,
+    "verdict": "One-line bottom-line conclusion"
+  }
+}

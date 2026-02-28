@@ -1,0 +1,76 @@
+{
+  "agent_name": "Strategy Orchestrator",
+  "agent_id": "69a27e6bd56a3c78b8262a4e",
+  "description": "Coordinates all five personality sub-agents, collects their independent analyses, generates the Boardroom Discussion by cross-referencing conflicts and agreements between modes, calculates final consensus confidence score, and assembles the complete structured output",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "boardroom_discussion": {
+      "key_conflicts": [
+        {
+          "between": "string",
+          "topic": "string",
+          "summary": "string"
+        }
+      ],
+      "agreements": [
+        "string"
+      ],
+      "logical_clarification": "string",
+      "creative_synthesis": "string",
+      "professor_insight": "string"
+    },
+    "strategic_summary": {
+      "recommendation": "string",
+      "consensus_score": "number",
+      "priority_level": "string",
+      "next_action": "string"
+    },
+    "individual_analyses": [
+      {
+        "mode_name": "string",
+        "mode_icon": "string",
+        "summary": "string",
+        "verdict": "string",
+        "full_analysis": {
+          "details": "string"
+        }
+      }
+    ]
+  },
+  "example_response": {
+    "boardroom_discussion": {
+      "key_conflicts": [
+        {
+          "between": "Which modes are in conflict",
+          "topic": "Topic of disagreement",
+          "summary": "Summary of the conflict"
+        }
+      ],
+      "agreements": [
+        "sample string"
+      ],
+      "logical_clarification": "How the Logical Analyst resolves disputed points",
+      "creative_synthesis": "The Creative Visionary alternative synthesis",
+      "professor_insight": "The Professor Guide educational perspective on disagreements"
+    },
+    "strategic_summary": {
+      "recommendation": "One-line recommendation",
+      "consensus_score": 0,
+      "priority_level": "Low, Medium, or High",
+      "next_action": "Specific immediate next step"
+    },
+    "individual_analyses": [
+      {
+        "mode_name": "Name of the analysis mode",
+        "mode_icon": "Icon identifier for this mode",
+        "summary": "Summary from this mode",
+        "verdict": "Verdict from this mode",
+        "full_analysis": {
+          "details": "Complete analysis details from this mode"
+        }
+      }
+    ]
+  }
+}

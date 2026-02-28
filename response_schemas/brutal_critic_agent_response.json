@@ -1,0 +1,32 @@
+{
+  "agent_name": "Brutal Critic Agent",
+  "agent_id": "69a27e4d99680de146f8c21e",
+  "description": "Delivers hard truths, exposes weaknesses and blind spots, provides unflinching reality checks, and directly challenges optimistic assumptions",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "mode_name": "string",
+    "mode_icon": "string",
+    "summary": "string",
+    "hard_truths": ["string"],
+    "blind_spots": ["string"],
+    "weaknesses": ["string"],
+    "reality_checks": ["string"],
+    "assumption_challenges": ["string"],
+    "must_fix": ["string"],
+    "verdict": "string"
+  },
+  "example_response": {
+    "mode_name": "Brutal Critic",
+    "mode_icon": "lightning",
+    "summary": "2-3 sentence brutal reality check",
+    "hard_truths": ["sample hard truth"],
+    "blind_spots": ["sample blind spot"],
+    "weaknesses": ["sample weakness"],
+    "reality_checks": ["sample reality check"],
+    "assumption_challenges": ["sample challenged assumption"],
+    "must_fix": ["sample non-negotiable issue"],
+    "verdict": "One-line brutal bottom-line conclusion"
+  }
+}
