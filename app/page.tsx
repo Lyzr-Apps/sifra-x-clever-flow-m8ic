@@ -1,24 +1,28 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { callAIAgent } from '@/lib/aiAgent'
 import { Card, CardContent } from '@/components/ui/card'
-import { FaBrain, FaBriefcase, FaGraduationCap, FaBolt, FaPalette } from 'react-icons/fa'
+import { FaBrain, FaBriefcase, FaGraduationCap, FaBolt, FaPalette, FaRocket } from 'react-icons/fa'
 import Sidebar from './sections/Sidebar'
 import AnalysisInput from './sections/AnalysisInput'
 import LoadingState from './sections/LoadingState'
 import ResultsDisplay from './sections/ResultsDisplay'
 import HistoryPanel, { type SavedAnalysis } from './sections/HistoryPanel'
+import PersonalContext, { buildContextPrompt, type UserProfile } from './sections/PersonalContext'
+import DecisionMemory, { type TrackedDecision } from './sections/DecisionMemory'
 
 const MANAGER_AGENT_ID = '69a27e6bd56a3c78b8262a4e'
 
+type ViewType = 'analysis' | 'history' | 'profile' | 'memory' | 'about'
+
 const AGENTS = [
-  { id: '69a27e6bd56a3c78b8262a4e', name: 'Strategy Orchestrator', role: 'Manager' },
-  { id: '69a27e4ca96eb35aa78a9c87', name: 'Logical Analyst', role: 'Data-driven analysis' },
-  { id: '69a27e4c8e6d0e51fd5cd3c6', name: 'CEO Strategist', role: 'Business strategy' },
-  { id: '69a27e4da96eb35aa78a9c89', name: 'Professor Guide', role: 'Educational guidance' },
-  { id: '69a27e4d99680de146f8c21e', name: 'Brutal Critic', role: 'Reality checks' },
-  { id: '69a27e4dd56a3c78b8262a4c', name: 'Creative Visionary', role: 'Innovation' },
+  { id: '69a27e6bd56a3c78b8262a4e', name: 'Strategy Orchestrator', role: 'Manager', color: 'hsl(265, 89%, 72%)' },
+  { id: '69a27e4ca96eb35aa78a9c87', name: 'Logical Analyst', role: 'Data-driven analysis', color: 'hsl(191, 97%, 70%)' },
+  { id: '69a27e4c8e6d0e51fd5cd3c6', name: 'CEO Strategist', role: 'Business strategy', color: 'hsl(31, 100%, 65%)' },
+  { id: '69a27e4da96eb35aa78a9c89', name: 'Professor Guide', role: 'Educational guidance', color: 'hsl(135, 94%, 60%)' },
+  { id: '69a27e4d99680de146f8c21e', name: 'Brutal Critic', role: 'Reality checks', color: 'hsl(326, 100%, 68%)' },
+  { id: '69a27e4dd56a3c78b8262a4c', name: 'Creative Visionary', role: 'Innovation', color: 'hsl(265, 89%, 72%)' },
 ]
 
 const SAMPLE_RESULT = {
@@ -101,11 +105,21 @@ class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-          <div className="text-center p-8 max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-            <p className="text-muted-foreground mb-4 text-sm">{this.state.error}</p>
-            <button onClick={() => this.setState({ hasError: false, error: '' })} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">Try again</button>
-          </div>
+          <Card className="bg-card border-border shadow-2xl max-w-md">
+            <CardContent className="p-8 text-center">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                style={{ backgroundColor: 'hsla(0, 100%, 62%, 0.1)' }}>
+                <FaBolt className="w-6 h-6" style={{ color: 'hsl(0, 100%, 62%)' }} />
+              </div>
+              <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
+              <p className="text-muted-foreground mb-4 text-sm">{this.state.error}</p>
+              <button onClick={() => this.setState({ hasError: false, error: '' })}
+                className="px-6 py-2.5 text-sm font-semibold rounded-xl text-white shadow-lg"
+                style={{ background: 'linear-gradient(135deg, hsl(265, 89%, 72%), hsl(265, 89%, 62%))' }}>
+                Try again
+              </button>
+            </CardContent>
+          </Card>
         </div>
       )
     }
@@ -114,7 +128,7 @@ class ErrorBoundary extends React.Component<
 }
 
 export default function Page() {
-  const [activeView, setActiveView] = useState<'analysis' | 'history' | 'about'>('analysis')
+  const [activeView, setActiveView] = useState<ViewType>('analysis')
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<ParsedResult | null>(null)
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
@@ -124,6 +138,28 @@ export default function Page() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [useSample, setUseSample] = useState(false)
   const [viewingHistory, setViewingHistory] = useState<SavedAnalysis | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [hasProfile, setHasProfile] = useState(false)
+  const [savedMsg, setSavedMsg] = useState('')
+
+  // Load profile on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sifra_x_user_profile')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed && parsed.name) {
+          setUserProfile(parsed)
+          setHasProfile(true)
+        }
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  const handleProfileUpdate = useCallback((profile: UserProfile) => {
+    setUserProfile(profile)
+    setHasProfile(true)
+  }, [])
 
   const handleAnalyze = useCallback(async (decision: string, contextTag: string) => {
     setIsLoading(true)
@@ -133,9 +169,27 @@ export default function Page() {
     setCurrentDecision(decision)
     setCurrentTag(contextTag)
     setActiveAgentId(MANAGER_AGENT_ID)
+    setSavedMsg('')
 
     try {
-      const message = contextTag ? `[Context: ${contextTag}] ${decision}` : decision
+      // Build the personalized message
+      let message = ''
+
+      // Add personal context if available
+      if (userProfile) {
+        const contextPrompt = buildContextPrompt(userProfile)
+        if (contextPrompt) {
+          message += contextPrompt + '\n\n'
+        }
+      }
+
+      // Add context tag
+      if (contextTag) {
+        message += `[Decision Category: ${contextTag}]\n\n`
+      }
+
+      message += `[DECISION TO ANALYZE]\n${decision}`
+
       const result = await callAIAgent(message, MANAGER_AGENT_ID)
 
       if (result.success && result.response) {
@@ -154,7 +208,7 @@ export default function Page() {
       setIsLoading(false)
       setActiveAgentId(null)
     }
-  }, [])
+  }, [userProfile])
 
   const handleToggleCard = useCallback((index: number) => {
     setExpandedCards((prev) => {
@@ -178,9 +232,25 @@ export default function Page() {
       fullResult: analysisResult as unknown as Record<string, unknown>,
     }
     try {
+      // Save to history
       const existing = JSON.parse(localStorage.getItem('sifra_x_history') ?? '[]')
       const updated = Array.isArray(existing) ? [saved, ...existing] : [saved]
       localStorage.setItem('sifra_x_history', JSON.stringify(updated))
+
+      // Also save to decision memory for tracking
+      const memoryKey = 'sifra_x_decisions'
+      const memExisting = JSON.parse(localStorage.getItem(memoryKey) ?? '[]')
+      const trackedDecision: TrackedDecision = {
+        ...saved,
+        predictedOutcome: saved.recommendation,
+        deadline: '',
+        outcome: undefined,
+      }
+      const memUpdated = Array.isArray(memExisting) ? [trackedDecision, ...memExisting] : [trackedDecision]
+      localStorage.setItem(memoryKey, JSON.stringify(memUpdated))
+
+      setSavedMsg('Analysis saved to History & Decision Memory')
+      setTimeout(() => setSavedMsg(''), 3000)
     } catch { /* ignore */ }
   }, [analysisResult, currentDecision, currentTag])
 
@@ -192,6 +262,7 @@ export default function Page() {
     setErrorMsg('')
     setViewingHistory(null)
     setUseSample(false)
+    setSavedMsg('')
   }, [])
 
   const handleViewHistory = useCallback((analysis: SavedAnalysis) => {
@@ -203,6 +274,17 @@ export default function Page() {
       setExpandedCards(new Set())
       setActiveView('analysis')
       setViewingHistory(analysis)
+    }
+  }, [])
+
+  const handleViewTrackedDecision = useCallback((decision: TrackedDecision) => {
+    const parsed = parseManagerResponse(decision.fullResult)
+    if (parsed) {
+      setAnalysisResult(parsed)
+      setCurrentDecision(decision.decision)
+      setCurrentTag(decision.contextTag)
+      setExpandedCards(new Set())
+      setActiveView('analysis')
     }
   }, [])
 
@@ -222,22 +304,38 @@ export default function Page() {
     }
   }, [useSample, handleNewAnalysis])
 
+  const VIEW_TITLES: Record<ViewType, string> = {
+    analysis: 'Decision Analysis',
+    history: 'Analysis History',
+    profile: 'Personal Context',
+    memory: 'Decision Memory',
+    about: 'About Sifra X',
+  }
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground font-sans flex">
         <Sidebar activeView={activeView} onNavigate={(v) => { setActiveView(v); if (v === 'analysis') setViewingHistory(null) }} />
 
-        <main className="flex-1 min-h-screen md:ml-0">
+        <main className="flex-1 min-h-screen md:ml-0 overflow-y-auto">
           <div className="max-w-4xl mx-auto px-4 md:px-8 py-6">
+            {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="md:hidden w-10" />
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
-                {activeView === 'analysis' ? 'Decision Analysis' : activeView === 'history' ? 'Analysis History' : 'About Sifra X'}
-              </h1>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
+                  {VIEW_TITLES[activeView]}
+                </h1>
+                {activeView === 'analysis' && hasProfile && userProfile?.name && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Personalized for {userProfile.name}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {activeView === 'analysis' && (
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="text-xs text-muted-foreground">Sample Data</span>
+                    <span className="text-xs text-muted-foreground">Sample</span>
                     <button
                       onClick={handleToggleSample}
                       className="relative w-10 h-5 rounded-full transition-colors duration-200"
@@ -250,19 +348,66 @@ export default function Page() {
               </div>
             </div>
 
+            {/* Success message */}
+            {savedMsg && (
+              <div className="mb-4 p-3 rounded-xl text-sm font-medium flex items-center gap-2"
+                style={{ backgroundColor: 'hsla(135, 94%, 60%, 0.1)', color: 'hsl(135, 94%, 60%)' }}>
+                <FaRocket className="w-3.5 h-3.5" />
+                {savedMsg}
+              </div>
+            )}
+
+            {/* === ANALYSIS VIEW === */}
             {activeView === 'analysis' && (
               <div className="space-y-6">
+                {/* Personal context compact view */}
+                {hasProfile && !analysisResult && !isLoading && (
+                  <PersonalContext onProfileUpdate={handleProfileUpdate} compact={true} />
+                )}
+
                 {!analysisResult && !isLoading && (
                   <AnalysisInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+                )}
+
+                {/* Setup prompt for new users */}
+                {!hasProfile && !analysisResult && !isLoading && (
+                  <Card className="bg-card border-border shadow-lg overflow-hidden"
+                    style={{ borderLeft: '3px solid hsl(135, 94%, 60%)' }}>
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: 'hsla(135, 94%, 60%, 0.12)' }}>
+                        <FaRocket className="w-4 h-4" style={{ color: 'hsl(135, 94%, 60%)' }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">Get personalized analysis</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Set up your profile so every analysis is tailored to your situation, skills, and goals.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setActiveView('profile')}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                        style={{ backgroundColor: 'hsla(135, 94%, 60%, 0.12)', color: 'hsl(135, 94%, 60%)' }}
+                      >
+                        Set Up
+                      </button>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {isLoading && <LoadingState />}
 
                 {errorMsg && !isLoading && (
                   <Card className="bg-card border-destructive/50 shadow-lg">
-                    <CardContent className="p-4">
-                      <p className="text-sm text-destructive font-medium">{errorMsg}</p>
-                      <button onClick={handleNewAnalysis} className="text-xs text-muted-foreground mt-2 underline">Try again</button>
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: 'hsla(0, 100%, 62%, 0.1)' }}>
+                        <FaBolt className="w-4 h-4" style={{ color: 'hsl(0, 100%, 62%)' }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-destructive font-medium">{errorMsg}</p>
+                        <button onClick={handleNewAnalysis} className="text-xs text-muted-foreground mt-1 underline">Try again</button>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
@@ -280,15 +425,18 @@ export default function Page() {
                   />
                 )}
 
+                {/* Agent Status Panel */}
                 <Card className="bg-card border-border shadow-lg">
                   <CardContent className="p-4">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Agent Status</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Agent Boardroom</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {AGENTS.map((agent) => (
-                        <div key={agent.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/40">
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${activeAgentId === agent.id ? 'animate-pulse' : ''}`} style={{ backgroundColor: activeAgentId === agent.id ? 'hsl(135, 94%, 60%)' : activeAgentId ? 'hsl(232, 16%, 28%)' : 'hsl(228, 10%, 62%)' }} />
+                        <div key={agent.id} className="flex items-center gap-2.5 p-2.5 rounded-xl transition-all duration-300"
+                          style={{ backgroundColor: activeAgentId === agent.id ? `${agent.color}10` : 'hsla(232, 16%, 24%, 0.5)' }}>
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${activeAgentId === agent.id ? 'animate-pulse' : ''}`}
+                            style={{ backgroundColor: activeAgentId === agent.id ? agent.color : activeAgentId ? 'hsl(232, 16%, 28%)' : 'hsl(228, 10%, 62%)' }} />
                           <div className="min-w-0">
-                            <p className="text-[11px] font-medium text-foreground truncate">{agent.name}</p>
+                            <p className="text-[11px] font-semibold text-foreground truncate">{agent.name}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{agent.role}</p>
                           </div>
                         </div>
@@ -299,24 +447,64 @@ export default function Page() {
               </div>
             )}
 
+            {/* === PROFILE VIEW === */}
+            {activeView === 'profile' && (
+              <PersonalContext onProfileUpdate={handleProfileUpdate} />
+            )}
+
+            {/* === HISTORY VIEW === */}
             {activeView === 'history' && (
               <HistoryPanel onViewAnalysis={handleViewHistory} />
             )}
 
+            {/* === DECISION MEMORY VIEW === */}
+            {activeView === 'memory' && (
+              <DecisionMemory onViewAnalysis={handleViewTrackedDecision} />
+            )}
+
+            {/* === ABOUT VIEW === */}
             {activeView === 'about' && (
               <Card className="bg-card border-border shadow-xl">
                 <CardContent className="p-8 space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                      Sifra <span style={{ color: 'hsl(265, 89%, 72%)' }}>X</span>
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">Multi-Perspective Strategic Intelligence System</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, hsl(265, 89%, 72%), hsl(265, 89%, 55%))' }}>
+                      <span className="text-white font-bold text-lg">SX</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                        Sifra <span style={{ color: 'hsl(265, 89%, 72%)' }}>X</span>
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Multi-Perspective Strategic Intelligence System</p>
+                    </div>
                   </div>
                   <p className="text-sm text-foreground/80 leading-relaxed">
-                    Sifra X helps ambitious decision-makers break through single-perspective thinking. Input any decision and receive analysis from five distinct strategic personalities, followed by a boardroom-style cross-examination and consensus score.
+                    Sifra X helps ambitious decision-makers break through single-perspective thinking. Input any decision and receive analysis from five distinct strategic personalities, followed by a boardroom-style cross-examination and consensus score. With the Personal Context Engine, every analysis is tailored to your specific situation. The Decision Memory System tracks your decisions over time, building intelligence patterns unique to you.
                   </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl border border-border bg-secondary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaRocket className="w-4 h-4" style={{ color: 'hsl(265, 89%, 72%)' }} />
+                        <p className="text-sm font-semibold text-foreground">Personal Context</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Your goals, skills, risk tolerance, and situation are woven into every analysis for truly personalized advice.
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-border bg-secondary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaBrain className="w-4 h-4" style={{ color: 'hsl(191, 97%, 70%)' }} />
+                        <p className="text-sm font-semibold text-foreground">Decision Memory</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Track decisions over time, compare predictions vs outcomes, and discover your decision-making patterns.
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">The Five Advisors</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">The Five Advisors</p>
                     {[
                       { icon: FaBrain, name: 'Logical Analyst', desc: 'Objective, data-driven analysis with pros/cons and risk assessment', color: 'hsl(191, 97%, 70%)' },
                       { icon: FaBriefcase, name: 'CEO Strategist', desc: 'Market opportunity, competitive edge, and execution strategy', color: 'hsl(31, 100%, 65%)' },
@@ -326,8 +514,8 @@ export default function Page() {
                     ].map((mode) => {
                       const Icon = mode.icon
                       return (
-                        <div key={mode.name} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${mode.color}20` }}>
+                        <div key={mode.name} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${mode.color}15` }}>
                             <Icon className="w-4 h-4" style={{ color: mode.color }} />
                           </div>
                           <div>
@@ -338,7 +526,7 @@ export default function Page() {
                       )
                     })}
                   </div>
-                  <p className="text-xs text-muted-foreground pt-4 border-t border-border">Powered by Lyzr</p>
+                  <p className="text-[10px] text-muted-foreground pt-4 border-t border-border">Powered by Lyzr</p>
                 </CardContent>
               </Card>
             )}
