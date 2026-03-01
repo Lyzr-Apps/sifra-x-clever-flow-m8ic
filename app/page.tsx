@@ -334,16 +334,22 @@ export default function Page() {
               </div>
               <div className="flex items-center gap-2">
                 {activeView === 'analysis' && (
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <div
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                    onClick={handleToggleSample}
+                    role="switch"
+                    aria-checked={useSample}
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleSample() } }}
+                  >
                     <span className="text-xs text-muted-foreground">Sample</span>
-                    <button
-                      onClick={handleToggleSample}
+                    <div
                       className="relative w-10 h-5 rounded-full transition-colors duration-200"
                       style={{ backgroundColor: useSample ? 'hsl(265, 89%, 72%)' : 'hsl(232, 16%, 28%)' }}
                     >
                       <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${useSample ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                    </button>
-                  </label>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
