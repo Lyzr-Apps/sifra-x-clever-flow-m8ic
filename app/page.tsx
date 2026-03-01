@@ -90,44 +90,8 @@ function parseManagerResponse(apiResponse: Record<string, unknown>): ParsedResul
   return null
 }
 
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error: string }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: '' }
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error: error.message }
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-          <Card className="bg-card border-border shadow-2xl max-w-md">
-            <CardContent className="p-8 text-center">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                style={{ backgroundColor: 'hsla(0, 100%, 62%, 0.1)' }}>
-                <FaBolt className="w-6 h-6" style={{ color: 'hsl(0, 100%, 62%)' }} />
-              </div>
-              <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
-              <p className="text-muted-foreground mb-4 text-sm">{this.state.error}</p>
-              <button onClick={() => this.setState({ hasError: false, error: '' })}
-                className="px-6 py-2.5 text-sm font-semibold rounded-xl text-white shadow-lg"
-                style={{ background: 'linear-gradient(135deg, hsl(265, 89%, 72%), hsl(265, 89%, 62%))' }}>
-                Try again
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
 export default function Page() {
+  const [mounted, setMounted] = useState(false)
   const [activeView, setActiveView] = useState<ViewType>('analysis')
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<ParsedResult | null>(null)
@@ -142,8 +106,14 @@ export default function Page() {
   const [hasProfile, setHasProfile] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
 
+  // Mount guard for SSR safety
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Load profile on mount
   useEffect(() => {
+    if (!mounted) return
     try {
       const stored = localStorage.getItem('sifra_x_user_profile')
       if (stored) {
@@ -154,7 +124,7 @@ export default function Page() {
         }
       }
     } catch (_e) { /* ignore */ }
-  }, [])
+  }, [mounted])
 
   const handleProfileUpdate = useCallback((profile: UserProfile) => {
     setUserProfile(profile)
@@ -313,8 +283,22 @@ export default function Page() {
     about: 'About Sifra X',
   }
 
+  // Prevent SSR rendering to avoid useContext null errors with Radix UI components
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background text-foreground font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+            style={{ background: 'linear-gradient(135deg, hsl(265, 89%, 72%), hsl(265, 89%, 55%))' }}>
+            <span className="text-white font-bold text-sm">SX</span>
+          </div>
+          <p className="text-sm text-muted-foreground">Loading Sifra X...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground font-sans flex">
         <Sidebar activeView={activeView} onNavigate={(v) => { setActiveView(v); if (v === 'analysis') setViewingHistory(null) }} />
 
@@ -540,6 +524,5 @@ export default function Page() {
           </div>
         </main>
       </div>
-    </ErrorBoundary>
   )
 }
