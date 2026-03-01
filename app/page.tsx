@@ -85,7 +85,7 @@ function parseManagerResponse(apiResponse: Record<string, unknown>): ParsedResul
           individual_analyses: Array.isArray(parsed.individual_analyses) ? parsed.individual_analyses : [],
         }
       }
-    } catch { /* not JSON string */ }
+    } catch (_e) { /* not JSON string */ }
   }
   return null
 }
@@ -153,7 +153,7 @@ export default function Page() {
           setHasProfile(true)
         }
       }
-    } catch { /* ignore */ }
+    } catch (_e) { /* ignore */ }
   }, [])
 
   const handleProfileUpdate = useCallback((profile: UserProfile) => {
@@ -192,7 +192,7 @@ export default function Page() {
 
       const result = await callAIAgent(message, MANAGER_AGENT_ID)
 
-      if (result.success && result.response) {
+      if (result && result.success && result.response) {
         const parsed = parseManagerResponse(result.response as unknown as Record<string, unknown>)
         if (parsed) {
           setAnalysisResult(parsed)
@@ -200,7 +200,8 @@ export default function Page() {
           setErrorMsg('Response received but could not parse the strategic analysis. The agent may have returned an unexpected format.')
         }
       } else {
-        setErrorMsg(result.error ?? result.response?.message ?? 'Analysis failed. Please try again.')
+        const errMsg = (result as Record<string, unknown>)?.error as string | undefined
+        setErrorMsg(errMsg ?? result?.response?.message ?? 'Analysis failed. Please try again.')
       }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Network error occurred.')
@@ -251,7 +252,7 @@ export default function Page() {
 
       setSavedMsg('Analysis saved to History & Decision Memory')
       setTimeout(() => setSavedMsg(''), 3000)
-    } catch { /* ignore */ }
+    } catch (_e) { /* ignore */ }
   }, [analysisResult, currentDecision, currentTag])
 
   const handleNewAnalysis = useCallback(() => {

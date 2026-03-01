@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils'
 import {
   FaChartLine, FaCheckCircle, FaTimesCircle, FaRegClock,
   FaSearch, FaTrash, FaTimes, FaChevronDown, FaChevronUp,
-  FaLightbulb, FaBrain, FaExclamationTriangle, FaPencilAlt,
-  FaArrowRight, FaRegCalendarAlt
+  FaLightbulb, FaBrain, FaPencilAlt,
+  FaArrowRight
 } from 'react-icons/fa'
 
 export interface DecisionOutcome {
@@ -121,35 +121,44 @@ export default function DecisionMemory({ onViewAnalysis }: DecisionMemoryProps) 
 
   useEffect(() => {
     try {
+      // Load existing decisions from memory
       const stored = localStorage.getItem(MEMORY_KEY)
+      let existing: TrackedDecision[] = []
       if (stored) {
         const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) setDecisions(parsed)
+        if (Array.isArray(parsed)) existing = parsed
       }
-      // Also load from regular history
+
+      // Also sync from regular history
       const historyStr = localStorage.getItem('sifra_x_history')
       if (historyStr) {
         const history = JSON.parse(historyStr)
         if (Array.isArray(history)) {
-          const memoryStr = localStorage.getItem(MEMORY_KEY)
-          const existing = memoryStr ? JSON.parse(memoryStr) : []
-          const existingIds = new Set(Array.isArray(existing) ? existing.map((d: TrackedDecision) => d.id) : [])
-          const newFromHistory = history
-            .filter((h: Record<string, unknown>) => !existingIds.has(h.id as string))
+          const existingIds = new Set(existing.map((d) => d.id))
+          const newFromHistory: TrackedDecision[] = history
+            .filter((h: Record<string, unknown>) => h && h.id && !existingIds.has(h.id as string))
             .map((h: Record<string, unknown>) => ({
-              ...h,
-              predictedOutcome: (h as Record<string, unknown>).recommendation as string ?? '',
+              id: String(h.id ?? ''),
+              decision: String(h.decision ?? ''),
+              contextTag: String(h.contextTag ?? ''),
+              consensusScore: Number(h.consensusScore ?? 0),
+              priorityLevel: String(h.priorityLevel ?? ''),
+              recommendation: String(h.recommendation ?? ''),
+              timestamp: String(h.timestamp ?? ''),
+              predictedOutcome: String(h.recommendation ?? ''),
               deadline: '',
               outcome: undefined,
+              fullResult: (h.fullResult as Record<string, unknown>) ?? {},
             }))
           if (newFromHistory.length > 0) {
-            const merged = [...(Array.isArray(existing) ? existing : []), ...newFromHistory]
-            setDecisions(merged)
-            localStorage.setItem(MEMORY_KEY, JSON.stringify(merged))
+            existing = [...existing, ...newFromHistory]
+            localStorage.setItem(MEMORY_KEY, JSON.stringify(existing))
           }
         }
       }
-    } catch { /* ignore */ }
+
+      setDecisions(existing)
+    } catch (_e) { /* ignore */ }
   }, [])
 
   const saveDecisions = useCallback((updated: TrackedDecision[]) => {

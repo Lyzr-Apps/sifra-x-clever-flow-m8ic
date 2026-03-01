@@ -39,7 +39,7 @@ export default function HistoryPanel({ onViewAnalysis }: HistoryPanelProps) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed)) setAnalyses(parsed)
       }
-    } catch { /* ignore */ }
+    } catch (_e) { /* ignore */ }
   }, [])
 
   const handleDelete = useCallback((id: string) => {

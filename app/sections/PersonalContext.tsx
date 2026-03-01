@@ -92,7 +92,7 @@ export default function PersonalContext({ onProfileUpdate, compact = false }: Pe
           setHasProfile(true)
         }
       }
-    } catch { /* ignore */ }
+    } catch (_e) { /* ignore */ }
   }, [])
 
   const saveProfile = useCallback((updated: UserProfile) => {

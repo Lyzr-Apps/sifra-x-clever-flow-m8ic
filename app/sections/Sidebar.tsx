@@ -23,7 +23,12 @@ const NAV_ITEMS: { id: ViewType; label: string; icon: typeof FaPlus; section?: s
 export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  let lastSection = ''
+  // Pre-compute which items should show section headers (avoid mutable variable in render)
+  const navWithSections = NAV_ITEMS.map((item, idx) => {
+    const prevSection = idx > 0 ? NAV_ITEMS[idx - 1].section : undefined
+    const showSection = !!(item.section && item.section !== prevSection)
+    return { ...item, showSection }
+  })
 
   return (
     <>
@@ -71,15 +76,13 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {navWithSections.map((item) => {
             const Icon = item.icon
             const isActive = activeView === item.id
-            const showSection = item.section && item.section !== lastSection
-            if (item.section) lastSection = item.section
 
             return (
               <div key={item.id}>
-                {showSection && (
+                {item.showSection && (
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold px-3 pt-4 pb-1.5">
                     {item.section}
                   </p>
